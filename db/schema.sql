@@ -26,7 +26,7 @@ CREATE TABLE employee (
     manager_id INTEGER,
     FOREIGN KEY (dept_id) REFERENCES department(dept_id),
     FOREIGN KEY (role_id) REFERENCES roles(role_id),
-    -- FOREIGN KEY (manager_id) REFERENCES employee(emp_id)
+    CONSTRAINT fk_manager FOREIGN KEY (manager_id) REFERENCES employee(emp_id)
 );
 
--- SELECT emp_id, first_name, last_name, department.dept_name AS department, roles.title AS title, roles.salary AS salary  FROM employee LEFT JOIN department ON employee.dept_id = department.dept_id LEFT JOIN roles ON employee.role_id = roles.role_id;
+-- SELECT emp.emp_id, emp.first_name, emp.last_name, department.dept_name AS department, roles.title AS title, roles.salary AS salary, man.first_name AS manager FROM employee emp LEFT JOIN department on emp.dept_id = department.dept_id  LEFT JOIN roles ON emp.role_id = roles.role_id  LEFT JOIN employee man on emp.manager_id = man.emp_id;
