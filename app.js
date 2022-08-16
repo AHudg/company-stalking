@@ -1,6 +1,7 @@
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 const db = require('./config/connection');
+const selectQuery = require('./lib/sqlQueries');
 
 const renderAllEmployees = function() {
     const sql = `SELECT emp.emp_id, emp.first_name, emp.last_name, 
@@ -56,12 +57,86 @@ const renderAllDepartments = function() {
     });
 };
 
+const addEmployee = function() {
+
+};
+
+const addRole = function() {
+    inquirer
+        .prompt({
+            type: 'text',
+            name: 'role',
+            message: 'What is the name of the new role?',
+            validate: roleInput => {
+                if (deptInput) {
+                    return true;
+                };
+                console.log('Please enter a department name to be added.');
+                return false;
+            }
+        },
+        {
+            type: 'text',
+            name: 'salary',
+            message: 'What is the salary associated with this role?',
+            validate: salaryInput => {
+                if (salaryInput) {
+                    return true;
+                };
+                console.log('Please enter a salary for this role.');
+                return false;
+            }
+        },
+        {
+            type: 'text',
+            name: 'department',
+            message: 'What department does this role belong to?',
+            choices: ['']
+        })
+
+};
+
+const addDepartment = function() {
+    inquirer
+        .prompt({
+            type: 'text',
+            name: 'department',
+            message: 'What is the name of the new department?',
+            validate: deptInput => {
+                if (deptInput) {
+                    return true;
+                };
+                console.log('Please enter a department name to be added.');
+                return false;
+            }
+        })
+        .then(({ department }) => {
+            const sql = `INSERT INTO department (dept_name) VALUES (?);`
+
+            db.query(sql, department, (err, results) => {
+                if (err) {
+                    console.log('Error. Could not create the new department.');
+                };
+                console.log(`Added ${department} as a department.`);
+                return mainMenu();
+            });
+        })
+};
+
+const updateEmployeeRole = function() {
+
+};
+
+const updateManager = function() {
+
+};
+
 const mainMenu = function() {
     inquirer
         .prompt({
             type: 'list',
-            message: 'Welcome to the Employee Database!',
             name: 'menu',
+            message: 'Welcome to the Employee Database!',
             choices: ['View All Employees','Add Employee','Update Employee Role','View All Roles','Add Role','View All Departments','Add Department','Exit']
         })
         .then(({ menu }) => {
@@ -70,27 +145,27 @@ const mainMenu = function() {
                     renderAllEmployees();
                     break;
                 case 'Add Employee':
-                    // code
+                    addEmployee();
                     break;
                 case 'Update Employee Role':
-                    // code
+                    updateEmployeeRole();
                     break;
                 case 'View All Roles':
                     renderAllRoles();
                     break;
                 case 'Add Role':
-                    // code
+                    addRole();
                     break;
                 case 'View All Departments':
                     renderAllDepartments();
                     break;
                 case 'Add Department':
-                    // code
+                    addDepartment();
                     break;
                 default:
                     console.log('See you later, alligator!');
-            }
-        })
+            };
+        });
 };
 
 mainMenu();
