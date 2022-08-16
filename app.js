@@ -25,55 +25,52 @@ const addEmployee = function() {
 const addRole = function() {
     const roleInfoArray = [];
 
+    const sql = selectQuery(2);
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.log('ERROR 500. We apologize! Looks like there is an error on our end. Check back in with us later!');
+            return;
+        };
+
+        const deptArray = results.map(({ dept_id, dept_name }) => (dept_name));
+
     inquirer
         .prompt([{
-            type: 'text',
-            name: 'role',
-            message: 'What is the name of the new role?',
-            validate: roleInput => {
-                if (roleInput) {
-                    return true;
-                };
-                console.log('Please enter a department name to be added.');
-                return false;
-            }
-        },
-        {
-            type: 'text',
-            name: 'salary',
-            message: 'What is the salary associated with this role?',
-            validate: salaryInput => {
-                if (salaryInput) {
-                    return true;
-                };
-                console.log('Please enter a salary for this role.');
-                return false;
-            }
-        }])
-        .then(({ role, salary }) => {
+                type: 'text',
+                name: 'role',
+                message: 'What is the name of the new role?',
+                validate: roleInput => {
+                    if (roleInput) {
+                        return true;
+                    };
+                    console.log('Please enter a department name to be added.');
+                    return false;
+                }
+            },
+            {
+                type: 'text',
+                name: 'salary',
+                message: 'What is the salary associated with this role?',
+                validate: salaryInput => {
+                    if (salaryInput) {
+                        return true;
+                    };
+                    console.log('Please enter a salary for this role.');
+                    return false;
+                }
+            },
+            {
+                type: 'list',
+                name: 'department',
+                message: 'What department does this role belong to?',
+                choices: deptArray
+            }])
+        .then(({ role, salary , department}) => {
             roleInfoArray.push(role);
             roleInfoArray.push(salary);
-
-            const sql = selectQuery(2);
-
-            db.query(sql, (err, results) => {
-                if (err) {
-                    console.log('ERROR 500. We apologize! Looks like there is an error on our end. Check back in with us later!');
-                    return;
-                };
-        
-                const deptArray = results.map(({ dept_id, dept_name }) => (dept_name));
-                        
-                inquirer
-                    .prompt({
-                        type: 'list',
-                        name: 'department',
-                        message: 'What department does this role belong to?',
-                        choices: deptArray
-                    })
-                    .then(({ department }) => {
-                        roleInfoArray.push(department);
-                    })
+            roleInfoArray.push(department);
+            console.log( roleInfoArray);
             });
         })
 };
