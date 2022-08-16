@@ -3,52 +3,13 @@ const cTable = require('console.table');
 const db = require('./config/connection');
 const selectQuery = require('./lib/sqlQueries');
 
-const renderAllEmployees = function() {
-    const sql = `SELECT emp.emp_id, emp.first_name, emp.last_name, 
-    department.dept_name AS department, 
-    roles.title AS title, roles.salary AS salary, 
-    man.first_name AS manager 
-    FROM employee emp 
-    LEFT JOIN department on emp.dept_id = department.dept_id 
-    LEFT JOIN roles ON emp.role_id = roles.role_id 
-    LEFT JOIN employee man on emp.manager_id = man.emp_id;`
+const renderInformation = function(queryID) {
+    const sql = selectQuery(queryID);
 
     db.query(sql, (err, results) => {
         if (err) {
             console.log('ERROR 500. We apologize! Looks like there is an error on our end. Check back in with us later!');
             return;
-        };
-        console.log('\n');
-        console.table(results);
-        console.log('\n');
-        return mainMenu();
-    });
-};
-
-const renderAllRoles = function() {
-    const sql = `SELECT roles.title,roles.salary, department.dept_name AS department
-    FROM roles 
-    LEFT JOIN department ON roles.dept_id = department.dept_id;`
-
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.log('ERROR 500. We apologize! Looks like there is an error on our end. Check back in with us later!');
-            return;
-        };
-        console.log('\n');
-        console.table(results);
-        console.log('\n');
-        return mainMenu();
-    });
-};
-
-const renderAllDepartments = function() {
-    const sql = `SELECT * FROM department;`
-
-    db.query(sql, (err, results) => {
-        if (err) {
-            console.log('ERROR 500. We apologize! Looks like there is an error on our end. Check back in with us later!');
-            return; 
         };
         console.log('\n');
         console.table(results);
@@ -62,13 +23,15 @@ const addEmployee = function() {
 };
 
 const addRole = function() {
+    const roleInfoArray = [];
+
     inquirer
-        .prompt({
+        .prompt([{
             type: 'text',
             name: 'role',
             message: 'What is the name of the new role?',
             validate: roleInput => {
-                if (deptInput) {
+                if (roleInput) {
                     return true;
                 };
                 console.log('Please enter a department name to be added.');
@@ -86,14 +49,33 @@ const addRole = function() {
                 console.log('Please enter a salary for this role.');
                 return false;
             }
-        },
-        {
-            type: 'text',
-            name: 'department',
-            message: 'What department does this role belong to?',
-            choices: ['']
-        })
+        }])
+        .then(({ role, salary }) => {
+            roleInfoArray.push(role);
+            roleInfoArray.push(salary);
 
+            const sql = selectQuery(2);
+
+            db.query(sql, (err, results) => {
+                if (err) {
+                    console.log('ERROR 500. We apologize! Looks like there is an error on our end. Check back in with us later!');
+                    return;
+                };
+        
+                const deptArray = results.map(({ dept_id, dept_name }) => (dept_name));
+                        
+                inquirer
+                    .prompt({
+                        type: 'list',
+                        name: 'department',
+                        message: 'What department does this role belong to?',
+                        choices: deptArray
+                    })
+                    .then(({ department }) => {
+                        roleInfoArray.push(department);
+                    })
+            });
+        })
 };
 
 const addDepartment = function() {
@@ -142,7 +124,7 @@ const mainMenu = function() {
         .then(({ menu }) => {
             switch(menu) {
                 case 'View All Employees':
-                    renderAllEmployees();
+                    renderInformation(0);
                     break;
                 case 'Add Employee':
                     addEmployee();
@@ -151,13 +133,13 @@ const mainMenu = function() {
                     updateEmployeeRole();
                     break;
                 case 'View All Roles':
-                    renderAllRoles();
+                    renderInformation(1);
                     break;
                 case 'Add Role':
                     addRole();
                     break;
                 case 'View All Departments':
-                    renderAllDepartments();
+                    renderInformation(2);
                     break;
                 case 'Add Department':
                     addDepartment();
