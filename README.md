@@ -12,13 +12,12 @@ This challenge exercised our knowledge of MYSQL to create a command line applica
 
 ---
 
-<br>
-
 ## -=Installation=-
 Before running the program, install *inquirer*, *console table*, and *MYSQL2* npm dependencies with:
 <div style="background-color:rgba(0, 0, 0, 0.25); vertical-align: middle; padding:10px 20px; border-radius: 10px">
 npm i
 </div>
+<br>
 Inquirer allows us to retrieve user input to edit the database. Console table returns well structured data to the command line. Lastly, MYSQL was utiilized to host the database for this challenge.
 
 <br>
