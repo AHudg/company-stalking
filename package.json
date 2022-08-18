@@ -12,6 +12,7 @@
     "lib": "lib"
   },
   "devDependencies": {
+    "dotenv": "^16.0.1",
     "nodemon": "^2.0.19"
   },
   "scripts": {

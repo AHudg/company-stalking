@@ -3,6 +3,7 @@ const cTable = require('console.table');
 const db = require('./config/connection');
 const selectQuery = require('./lib/sqlQueries');
 
+// DRY code to view different tables
 const renderInformation = function(queryID) {
     const sql = selectQuery(queryID);
 
@@ -19,8 +20,10 @@ const renderInformation = function(queryID) {
 };
 
 const addEmployee = function() {
+    // empty array that will hold the parameters for the sql query
     const employeeInfoArray = [];
 
+    // queries for the current role list to be used as the choices
     let sqlRoleData = selectQuery(1);
 
     db.query(sqlRoleData, (err, roleResults) => {
@@ -28,10 +31,11 @@ const addEmployee = function() {
             console.log('ERROR 500. We apologize! Looks like there is an error on our end. Check back in with us later!');
             return;
         };
-    
+        
         const roleArray = roleResults.map(({ title }) => (title));
         const roleDeptID = roleResults.map(({ dept_id }) => (dept_id));
 
+        // queries for the current employees to be used as the choices for potential manager
         let sqlEmpData = selectQuery(0);
 
         db.query(sqlEmpData, (err, empResults) => {
@@ -41,7 +45,6 @@ const addEmployee = function() {
             };
 
             const empArray = empResults.map(({ first_name, last_name }) => (first_name + " " + last_name));
-            const empManagerID = empResults.map(({ emp_id }) => (emp_id));
 
             inquirer
                 .prompt([
@@ -86,8 +89,10 @@ const addEmployee = function() {
                     employeeInfoArray.push(first);
                     employeeInfoArray.push(last);
 
+                    // uses the index to assign the the role_id & dept_id
                     for (let i = 0; i < roleArray.length; i++) {
                         if (roleArray[i] === role) {
+                            // i + 1 because the array starts at i = 0, but the tables begin at i = 1;
                             const roleID = i + 1;
                             employeeInfoArray.push(roleID);
                             const deptID = roleDeptID[i];
@@ -95,6 +100,7 @@ const addEmployee = function() {
                         };
                     };
 
+                    // uses the index to assign the manager_id
                     for (let i = 0; i < empArray.length; i++) {
                         if (empArray[i] === manager) {
                             const managerID = i + 1;
@@ -121,6 +127,7 @@ const addEmployee = function() {
 const addRole = function() {
     const roleInfoArray = [];
 
+    // queries for current department list to use as the choices in the inquirery
     const sqlDeptData = selectQuery(2);
 
     db.query(sqlDeptData, (err, results) => {
@@ -168,6 +175,7 @@ const addRole = function() {
                 roleInfoArray.push(role);
                 roleInfoArray.push(salary);
 
+                // uses the index to assign the dept_id for the query
                 for (let i = 0; i < deptArray.length; i++) {
                     if (deptArray[i] === department) {
                         const departmentID = i + 1;
@@ -228,7 +236,6 @@ const updateEmployeeRole = function() {
         };
     
         const roleArray = roleResults.map(({ title }) => (title));
-        const roleID = roleResults.map(({ role_id }) => (role_id));
 
     inquirer
         .prompt([
@@ -267,7 +274,6 @@ const updateEmployeeRole = function() {
                 };
             };
 
-            console.log(updateArray);
             sql = selectQuery(8)
 
             db.query(sql, updateArray, (err, results) => {
@@ -282,6 +288,7 @@ const updateEmployeeRole = function() {
     })
 };
 
+// host the application
 const mainMenu = function() {
     inquirer
         .prompt({
@@ -291,6 +298,7 @@ const mainMenu = function() {
             choices: ['View All Employees','Add Employee','Update Employee Role','View All Roles','Add Role','View All Departments','Add Department','Exit']
         })
         .then(({ menu }) => {
+            // creates a cyclical menu that calls the functions to produce the desired choice- then the functions return calling mainMenu()
             switch(menu) {
                 case 'View All Employees':
                     renderInformation(3);
