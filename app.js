@@ -217,11 +217,69 @@ const addDepartment = function() {
 };
 
 const updateEmployeeRole = function() {
+    const updateArray = [];
 
-};
+    let sqlRoleData = selectQuery(1);
 
-const updateManager = function() {
+    db.query(sqlRoleData, (err, roleResults) => {
+        if (err) {
+            console.log('ERROR 500. We apologize! Looks like there is an error on our end. Check back in with us later!');
+            return;
+        };
+    
+        const roleArray = roleResults.map(({ title }) => (title));
+        const roleID = roleResults.map(({ role_id }) => (role_id));
 
+    inquirer
+        .prompt([
+            {
+                type: 'number',
+                name: 'employeeId',
+                message: 'Enter the employee ID to update their role.',
+                validate: idInput => {
+                    if (idInput) {
+                        return true;
+                    };
+                    console.log('You need to enter an employee ID so we know who is getting a new role!');
+                    return false;
+                }
+            },
+            {
+                type: 'list',
+                name: 'newRole',
+                message: 'What role should we assign this employee?',
+                choices: roleArray,
+                validate: roleInput => {
+                    if (roleInput) {
+                        return true;
+                    };
+                    console.log('You need to enter in the new employee role.');
+                    return false;
+                }
+            }
+        ])
+        .then(({ employeeId, newRole }) => {
+            updateArray.push(employeeId);
+            for (let i = 0; i < roleArray.length; i++) {
+                if (roleArray[i] === newRole) {
+                    const newRoleId = i + 1;
+                    updateArray.push(newRoleId);
+                };
+            };
+
+            console.log(updateArray);
+            sql = selectQuery(8)
+
+            db.query(sql, updateArray, (err, results) => {
+                if (err) {
+                    console.log('ERROR 404. Looks like the request was bad. Try resubmitting and double check the input.');
+                    return;
+                };
+                console.log(`Successfully updated employee ${employeeId}.\n`);
+                return mainMenu();
+            })
+        })
+    })
 };
 
 const mainMenu = function() {
