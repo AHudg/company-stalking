@@ -237,52 +237,68 @@ const updateEmployeeRole = function() {
     
         const roleArray = roleResults.map(({ title }) => (title));
 
-    inquirer
-        .prompt([
-            {
-                type: 'number',
-                name: 'employeeId',
-                message: 'Enter the employee ID to update their role.',
-                validate: idInput => {
-                    if (idInput) {
-                        return true;
-                    };
-                    console.log('You need to enter an employee ID so we know who is getting a new role!');
-                    return false;
-                }
-            },
-            {
-                type: 'list',
-                name: 'newRole',
-                message: 'What role should we assign this employee?',
-                choices: roleArray,
-                validate: roleInput => {
-                    if (roleInput) {
-                        return true;
-                    };
-                    console.log('You need to enter in the new employee role.');
-                    return false;
-                }
-            }
-        ])
-        .then(({ employeeId, newRole }) => {
-            updateArray.push(employeeId);
-            for (let i = 0; i < roleArray.length; i++) {
-                if (roleArray[i] === newRole) {
-                    const newRoleId = i + 1;
-                    updateArray.push(newRoleId);
-                };
-            };
+        let sqlEmpData = selectQuery(0);
 
-            sql = selectQuery(8)
+        db.query(sqlEmpData, (err, empResults) => {
+            if (err) {
+               console.log('ERROR 500. We apologize! Looks like there is an error on our end. Check back in with us later!');
+               return;
+           };
 
-            db.query(sql, updateArray, (err, results) => {
-                if (err) {
-                    console.log('ERROR 404. Looks like the request was bad. Try resubmitting and double check the input.');
-                    return;
+           const empArray = empResults.map(({ emp_id }) => (emp_id));
+
+        inquirer
+            .prompt([
+                {
+                    type: 'number',
+                    name: 'employeeId',
+                    message: 'Enter the employee ID to update their role.',
+                    validate: idInput => {
+                        if (idInput) {
+                            if (idInput <= empArray.length) {
+                                return true;
+                            }
+                            console.log('This employee does not exist! Try again.');
+                            return false;
+                        };
+                        console.log('You need to enter an employee ID so we know who is getting a new role!');
+                        return false;
+                    }
+                },
+                {
+                    type: 'list',
+                    name: 'newRole',
+                    message: 'What role should we assign this employee?',
+                    choices: roleArray,
+                    validate: roleInput => {
+                        if (roleInput) {
+                            return true;
+                        };
+                        console.log('You need to enter in the new employee role.');
+                        return false;
+                    }
+                }
+            ])
+            .then(({ employeeId, newRole }) => {
+                for (let i = 0; i < roleArray.length; i++) {
+                    if (roleArray[i] === newRole) {
+                        const newRoleId = i + 1;
+                        updateArray.push(newRoleId);
+                    };
                 };
-                console.log(`Successfully updated employee ${employeeId}.\n`);
-                return mainMenu();
+
+                updateArray.push(employeeId);
+
+                sql = selectQuery(8)
+
+                db.query(sql, updateArray, (err, results) => {
+                    if (err) {
+                        console.log('ERROR 404. Looks like the request was bad. Try resubmitting and double check the input.');
+                        return;
+                    };
+                    console.log(`Successfully updated employee ${employeeId}.\n`);
+                    return mainMenu();
+                })
             })
         })
     })
